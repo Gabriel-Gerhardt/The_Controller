@@ -5,6 +5,7 @@ from textual.events import Key
 from pathlib import Path
 from typing import cast
 from rich.text import Text
+import shutil
 
 
 class FileManagerApp(App):
@@ -57,6 +58,18 @@ class FileManagerApp(App):
             if self.current_path.parent != self.current_path:
                 self.current_path = self.current_path.parent
                 self.load_files()
+
+        if event.key == "2":
+            selected_path = self.current_path / label
+            destination = Path("/Users/gabrielgerhardt/Desktop") / label
+
+            if selected_path.is_dir():
+                shutil.copytree(selected_path, destination)
+            elif selected_path.is_file():
+                shutil.copy(selected_path, destination)
+
+
+
 
 
 if __name__ == "__main__":
