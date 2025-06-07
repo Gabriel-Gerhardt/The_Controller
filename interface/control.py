@@ -17,6 +17,7 @@ class FileManagerApp(App):
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
         yield ListView(id="file_list")
+        yield Static("", id="message_bar")
         yield Footer()
 
     def on_mount(self):
@@ -35,7 +36,9 @@ class FileManagerApp(App):
             list_view.append(ListItem(Static(Text(label))))
         list_view.append(ListItem(Static(Text(".temp"))))
 
-
+    def show_message(self, message: str):
+        message_bar = self.query_one("#message_bar", Static)
+        message_bar.update(message)
 
     async def on_key(self, event: Key):
         list_view = self.query_one("#file_list", ListView)
@@ -62,6 +65,10 @@ class FileManagerApp(App):
         if event.key == "2":
             selected_path = self.current_path / label
             destination = Path("/Users/gabrielgerhardt/Desktop") / label
+
+            if destination.exists():
+                self.show_message(f"[blue]Aviso:[/] O arquivo '{label}' já existe no diretório. Copia cancelada.")
+                return
 
             if selected_path.is_dir():
                 shutil.copytree(selected_path, destination)
