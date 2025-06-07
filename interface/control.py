@@ -32,6 +32,8 @@ class FileManagerApp(App):
                 continue
             label = item.name
             list_view.append(ListItem(Static(Text(label))))
+        list_view.append(ListItem(Static(Text(".temp"))))
+
 
 
     async def on_key(self, event: Key):
