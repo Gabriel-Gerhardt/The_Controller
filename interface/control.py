@@ -10,10 +10,14 @@ import shutil
 
 class FileManagerApp(App):
     CSS_PATH = None
-    BINDINGS = [("q", "quit", "Sair")]
+    BINDINGS = [("q", "quit", "Sair"),
+    ("2", "copy_desktop", "Copiar p/ Desktop"),
+       ("3", "move", "Mover"),
+       ("p", "put", "Put (Colar)"),
+    ]
 
     current_path = reactive(Path.cwd())
-
+    copy_buffer = reactive(None)
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
         yield ListView(id="file_list")
@@ -50,7 +54,7 @@ class FileManagerApp(App):
         label_widget = cast(Static, selected_item.children[0])
         text = cast(Text, label_widget.renderable)
         label = text.plain.rstrip("/")
-
+        selected_path = self.current_path / label
         if event.key == "right":
             new_path = self.current_path / label
             if new_path.is_dir():
@@ -75,8 +79,25 @@ class FileManagerApp(App):
             elif selected_path.is_file():
                 shutil.copy(selected_path, destination)
 
+        elif event.key == "3":
+            self.copy_buffer = selected_path
+            self.show_message(f"[green]Selecionado para copiar:[/] '{label}'")
+        elif event.key == "p" and self.copy_buffer:
+                destination = self.current_path / self.copy_buffer.name
+                if destination.exists():
+                    self.show_message(f"[blue]Aviso:[/] '{destination.name}' já existe aqui.")
+                    return
 
+                try:
+                    if self.copy_buffer.is_dir():
+                        shutil.copytree(self.copy_buffer, destination)
+                    else:
+                        shutil.copy(self.copy_buffer, destination)
 
+                    self.show_message(f"[blue]Copiado:[/] '{self.copy_buffer.name}' → '{self.current_path}'")
+                    self.load_files()
+                except Exception as e:
+                    self.show_message(f"[blue]Erro:[/] {e}")
 
 
 if __name__ == "__main__":
